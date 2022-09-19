@@ -15,7 +15,7 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     vy = 1
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
-    if (atefoodflag == 0) {
+    if (atefoodflag == 0 && snakehead.overlapsWith(snakefood)) {
         snakebody.unshift(sprites.create(img`
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
@@ -48,11 +48,13 @@ let vy = 0
 let vx = 0
 let foody = 0
 let foodx = 0
+let snakefood: Sprite = null
+let snakehead: Sprite = null
 let atefoodflag = 0
 let snakebody: Sprite[] = []
 snakebody = []
 atefoodflag = 0
-let snakehead = sprites.create(img`
+snakehead = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
@@ -70,7 +72,8 @@ let snakehead = sprites.create(img`
     . . . . . . 3 3 3 3 3 3 3 3 3 3 
     . . . . . . 3 3 3 3 3 3 3 3 3 3 
     `, SpriteKind.Player)
-let snakefood = sprites.create(img`
+snakehead.setFlag(SpriteFlag.AutoDestroy, true)
+snakefood = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
@@ -92,6 +95,16 @@ foodx = 80
 foody = 60
 vx = 1
 vy = 0
+game.onUpdate(function () {
+    for (let value of snakebody) {
+        if (!(value == snakebody[1]) && !(value == snakebody[0]) && snakehead.overlapsWith(value)) {
+            game.over(false)
+        }
+    }
+    if (snakeheadx < 0 || (snakeheadx > 160 || (snakeheady < 0 || snakeheady > 120))) {
+        game.over(false)
+    }
+})
 game.onUpdate(function () {
     snakehead.setPosition(snakeheadx + 2, snakeheady + 2)
     snakefood.setPosition(foodx + 2, foody + 2)
@@ -122,11 +135,4 @@ game.onUpdate(function () {
     }
     snakeheadx += updatevx
     snakeheady += updatevy
-})
-game.onUpdate(function () {
-    for (let value of snakebody) {
-        if (!(value == snakebody[0]) && snakehead.overlapsWith(value)) {
-            game.over(false)
-        }
-    }
 })
